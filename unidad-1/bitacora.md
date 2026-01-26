@@ -37,7 +37,60 @@
   </li>
 </ul>
 
+<h3>Actividad 05</h3>
+
+```
+let port;
+let connectBtn;
+let moveX;
+
+function setup() {
+  createCanvas(400, 400);
+  background(220);
+  port = createSerial();
+  connectBtn = createButton("Connect to micro:bit");
+  connectBtn.position(80, 360);
+  connectBtn.mousePressed(connectBtnClick);
+  fill("white");
+  moveX = width / 2
+  ellipse(width / 2, height / 2, 100, 100);
+}
+
+function draw() {
+  if (port.availableBytes() > 0) {
+    let dataRx = port.read(1);
+    if (dataRx == "A") {
+     moveX = moveX + 6
+    } else if (dataRx == "B") {
+      moveX = moveX - 
+    } 
+    background(220);
+    ellipse(moveX,  height / 2, 100, 100);
+  }
+
+  if (!port.opened()) {
+    connectBtn.html("Connect to micro:bit");
+  } else {
+    connectBtn.html("Disconnect");
+  }
+}
+function connectBtnClick() {
+  if (!port.opened()) {
+    port.open("MicroPython", 115200);
+  } else {
+    port.close();
+  }
+}
+```
+<p>
+El programa utiliza A y b para mover un circulo X. El código inicia declarando tres variables globales, una para el puerto, otra para el botón para conectar con el mirobit y luego la variable de movimiento. Después se crea una función para crear el canva de fondo y aplicarle color, luego se le asigna un valor a la variable port, esto para crear un serial. Utiliza la variable conectBtn para asignarle un botón con un texto y luego se le asigna una posición dentro del canvas, en la siguiente línea le dice que si este btn es presionado por el mouse llame la función connectBtnClick. Ahora se crea el círculo, se le asigana un color predeterminado, una posisción inical en x con la variable moveX, y una fija en Y, para finalmente darle un tamaño.
+
+En la función draw, estamos buscando re dibujar el círculo en la posicióin deseada al oprimir los btn A y B, iniciamos preguntando si el puerto esta siendo activaado    
+
+</p>
+
 
 ## Bitácora de reflexión
+
 
 
