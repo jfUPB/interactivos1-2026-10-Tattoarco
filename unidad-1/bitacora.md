@@ -100,10 +100,20 @@ La función connectBtnClick() controla la conexión con el micro:bit. Si el puer
 
 
 ## Bitácora de reflexión
+
+<h3>Actividad 6</h3>
 <ul>
-  <li>Actividad 6</li>
-  <p></p>
+  <li>Explixación</li>
+  <p>
+Utilizamos dos editores de texto, uno para progreamar el microbit y otro para generar la lógica de programacion. En el programa didirigido al microbit se inicia reconociendo el purto de cnocciíon entre el microbit y el computador, para luego realizar un ciclo, el cual desde un principio esta inicializado en true, lo que hace que este se ejecute desde que se conecte el microbit. Dentro del ciclo hay un if, en este se pregunta si el btn ´A´ esta siendo presionado, si esto es verdad se muestra la letra 'A', de lo contrario se muestra la letra 'N', esta acción se ejecuta indeterminadamente cada segundo.
+
+Ya en el programa p5.js inicia con tres variables globales 'port' para declarar el puerto, 'connectBtn' para declarar el btn con el que se va a conectar al microbit y 'connectionInitialized' iniciada en false. Luego la función setup() es utilizada para crear el canvas, conectar con el puerto, crear el btn y posicionarlo, para después declarar que si el btn es presionado ejecute la función 'connectBtnClick()', esta función esta siendo utilizada con un if, el cual inicia buscando si el puerto declarado esta abierto, si no lo esta ejecuta la acción de abrirlo y conectar el puertom, pero si no es así este lo cierra. 
+
+A continuación de la función setup() esta la función draw(), en esta esta la lógica necesaria para hacer funcionar el microbit, declarando un canva y dandole el color necesario, para luego con un if comprobar que el puerto esta abierto, luego, en otro if, pregunta que si el puerto esta mandando acciones mayores que 0 asigne el valor 1 en dataRx (variable declarada previamente). Si esto se cumple y el btn esta siendo presionado rellene el cuadro de color rojo de lo contrario que sea verde. 
+   
+  </p>
 </ul>
+
 
 
 
