@@ -103,7 +103,7 @@ La función connectBtnClick() controla la conexión con el micro:bit. Si el puer
 
 <h3>Actividad 6</h3>
 <ul>
-  <li>Explixación</li>
+  <li>Explicación</li>
   <p>
 Utilizamos dos editores de texto, uno para progreamar el microbit y otro para generar la lógica de programacion. En el programa didirigido al microbit se inicia reconociendo el purto de cnocciíon entre el microbit y el computador, para luego realizar un ciclo, el cual desde un principio esta inicializado en true, lo que hace que este se ejecute desde que se conecte el microbit. Dentro del ciclo hay un if, en este se pregunta si el btn ´A´ esta siendo presionado, si esto es verdad se muestra la letra 'A', de lo contrario se muestra la letra 'N', esta acción se ejecuta indeterminadamente cada segundo.
 
@@ -113,6 +113,7 @@ A continuación de la función setup() esta la función draw(), en esta esta la 
    
   </p>
 </ul>
+
 
 
 
