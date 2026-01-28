@@ -42,7 +42,7 @@
 
 <h3>Actividad 05</h3>
 
-```
+```js
 let port;
 let connectBtn;
 let moveX;
@@ -113,6 +113,7 @@ A continuación de la función setup() esta la función draw(), en esta esta la 
    
   </p>
 </ul>
+
 
 
 
