@@ -28,14 +28,19 @@
 
 <img align='rigth' src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnlib2xwNHdyZ2w5OWdtNmpndWtwOHNrdDdqZTVjNzk5bDczYTlkZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26gseo7hVYmbRloAw/giphy.gif" width="280" height="280"  frameBorder="0" >
 
-## Bitácora de aplicación 
 <h3>Actividad 04</h3>
 <ul>
   <li>
     ¿Por qué no funcionaba el programa con was_pressed() y por qué funciona con is_pressed()?
-    <p></p>
+    <p>El programa no funcionaba correctamente cuando se utilizaba was_pressed() debido a la forma en que este método detecta las pulsaciones del botón en el micro:bit. La función was_pressed() solo devuelve True una única vez por cada pulsación, es decir, detecta el evento únicamente en el momento exacto en que el botón pasa de no estar presionado a estarlo. Después de esa lectura, el estado se reinicia automáticamente y vuelve a False, aunque el botón continúe presionado físicamente.
+
+En este caso, el micro:bit está enviando datos por el puerto serial de manera continua dentro de un ciclo while True, con un pequeño retardo de 100 milisegundos. Debido a esta ejecución constante, was_pressed() solo alcanza a enviar la letra “A” una sola vez cuando se presiona el botón, y en los siguientes ciclos deja de detectarse la pulsación. Esto provoca que el programa en p5.js no reciba información constante y no pueda mantener un estado visual estable, ya que depende de lecturas continuas para actualizar el color del rectángulo.
+
+Por el contrario, la función is_pressed() evalúa si el botón está presionado en ese instante, sin importar cuánto tiempo lleve presionado. Mientras el usuario mantenga presionado el botón A, is_pressed() devuelve True en cada iteración del ciclo, lo que permite enviar repetidamente la letra “A” por el puerto serial. Cuando el botón no está presionado, se envía la letra “N”, asegurando que siempre haya datos disponibles para el programa en p5.js.</p>
   </li>
 </ul>
+
+## Bitácora de aplicación 
 
 <h3>Actividad 05</h3>
 
@@ -83,14 +88,24 @@ function connectBtnClick() {
 }
 ```
 <p>
-El programa utiliza A y b para mover un circulo X. El código inicia declarando tres variables globales, una para el puerto, otra para el botón para conectar con el mirobit y luego la variable de movimiento. Después se crea una función para crear el canva de fondo y aplicarle color, luego se le asigna un valor a la variable port, esto para crear un serial. Utiliza la variable conectBtn para asignarle un botón con un texto y luego se le asigna una posición dentro del canvas, en la siguiente línea le dice que si este btn es presionado por el mouse llame la función connectBtnClick. Ahora se crea el círculo, se le asigana un color predeterminado, una posisción inical en x con la variable moveX, y una fija en Y, para finalmente darle un tamaño.
+El código inicia declarando tres variables globales. La variable port se encarga de gestionar la comunicación serial entre el programa y el micro:bit. La variable connectBtn se utiliza para crear un botón en pantalla que permite conectar o desconectar el micro:bit. Finalmente, la variable moveX controla la posición horizontal del círculo sobre el eje X.
 
-En la función draw, estamos buscando re dibujar el círculo en la posicióin deseada al oprimir los btn A y B, iniciamos preguntando si el puerto esta siendo activaado    
+En la función setup(), que se ejecuta una sola vez al iniciar el programa, se crea un canvas de 400 por 400 píxeles y se establece un color de fondo. Luego se inicializa el puerto serial utilizando createSerial(). A continuación, se crea el botón de conexión con el texto “Connect to micro:bit”, se ubica dentro del canvas y se le asigna la función connectBtnClick(), la cual se ejecuta cuando el botón es presionado con el mouse. Posteriormente, se define el color del círculo, se asigna a la variable moveX una posición inicial en el centro del canvas y se dibuja el círculo por primera vez con una posición fija en el eje Y y un tamaño determinado.
+
+La función draw() se ejecuta de forma continua y es la encargada de actualizar la posición del círculo. En esta función, primero se verifica si existen datos disponibles en el puerto serial. Si hay información, se lee un carácter enviado por el micro:bit. Cuando el programa recibe la letra “A”, aumenta el valor de moveX, lo que provoca que el círculo se desplace hacia la derecha. Cuando recibe la letra “B”, disminuye el valor de moveX, permitiendo que el círculo se mueva hacia la izquierda. Después de actualizar la posición, el fondo se vuelve a dibujar y el círculo se muestra en su nueva ubicación.
+
+Dentro de la misma función draw(), el programa también comprueba si el puerto serial se encuentra abierto. Si no hay conexión, el texto del botón indica “Connect to micro:bit”. Si el micro:bit está conectado correctamente, el texto del botón cambia a “Disconnect”, informando al usuario del estado actual de la conexión.
+
+La función connectBtnClick() controla la conexión con el micro:bit. Si el puerto no está abierto, el programa establece la comunicación utilizando el nombre “MicroPython” y una velocidad de transmisión de 115200 baudios. Si el puerto ya se encuentra abierto, la función se encarga de cerrarlo. 
 
 </p>
 
 
 ## Bitácora de reflexión
+<ul>
+  <li>Actividad 6</li>
+  <p></p>
+</ul>
 
 
 
