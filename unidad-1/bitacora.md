@@ -34,9 +34,7 @@
     ¿Por qué no funcionaba el programa con was_pressed() y por qué funciona con is_pressed()?
     <p>El programa no funcionaba correctamente cuando se utilizaba was_pressed() debido a la forma en que este método detecta las pulsaciones del botón en el micro:bit. La función was_pressed() solo devuelve True una única vez por cada pulsación, es decir, detecta el evento únicamente en el momento exacto en que el botón pasa de no estar presionado a estarlo. Después de esa lectura, el estado se reinicia automáticamente y vuelve a False, aunque el botón continúe presionado físicamente.
 
-En este caso, el micro:bit está enviando datos por el puerto serial de manera continua dentro de un ciclo while True, con un pequeño retardo de 100 milisegundos. Debido a esta ejecución constante, was_pressed() solo alcanza a enviar la letra “A” una sola vez cuando se presiona el botón, y en los siguientes ciclos deja de detectarse la pulsación. Esto provoca que el programa en p5.js no reciba información constante y no pueda mantener un estado visual estable, ya que depende de lecturas continuas para actualizar el color del rectángulo.
-
-Por el contrario, la función is_pressed() evalúa si el botón está presionado en ese instante, sin importar cuánto tiempo lleve presionado. Mientras el usuario mantenga presionado el botón A, is_pressed() devuelve True en cada iteración del ciclo, lo que permite enviar repetidamente la letra “A” por el puerto serial. Cuando el botón no está presionado, se envía la letra “N”, asegurando que siempre haya datos disponibles para el programa en p5.js.</p>
+</p>
   </li>
 </ul>
 
@@ -106,6 +104,7 @@ La función connectBtnClick() controla la conexión con el micro:bit. Si el puer
   <li>Actividad 6</li>
   <p></p>
 </ul>
+
 
 
 
