@@ -125,9 +125,109 @@ waitYellow --> waitRed: Timeout / amarillo OFF
 ```
 <img width="515" height="512" alt="image" src="https://github.com/user-attachments/assets/78346fe2-5243-48da-9408-a0b1bc21d405" />
 
+### Actividad 3
+```` .asm
+from microbit import *
+import utime
+
+class Timer:
+    def __init__(self, owner, event_to_post, duration):
+        self.owner = owner
+        self.event = event_to_post
+        self.duration = duration
+        self.start_time = 0
+        self.active = False
+
+    def start(self, new_duration=None):
+        if new_duration is not None:
+            self.duration = new_duration
+        self.start_time = utime.ticks_ms()
+        self.active = True
+
+    def stop(self):
+        self.active = False
+
+    def update(self):
+        if self.active:
+            if utime.ticks_diff(utime.ticks_ms(), self.start_time) >= self.duration:
+                self.active = False
+                self.owner.post_event(self.event)
+
+
+class Task:
+    def __init__(self):
+        self.pixeles = 20
+        self.event_queue = []
+        self.timers = []
+        # Personalizas el nombre del evento y la duración
+        self.myTimer = self.createTimer("Timeout",1000)
+
+        self.estado_actual = None
+        self.transicion_a(self.estado_estado1)
+
+    def createTimer(self,event,duration):
+        t = Timer(self, event, duration)
+        self.timers.append(t)
+        return t
+
+    def post_event(self, ev):
+        self.event_queue.append(ev)
+
+    def update(self):
+        # 1. Actualizar todos los timers internos automáticamente
+        for t in self.timers:
+            t.update()
+
+        # 2. Procesar la cola de eventos resultante
+        while len(self.event_queue) > 0:
+            ev = self.event_queue.pop(0)
+            if self.estado_actual:
+                self.estado_actual(ev)
+
+    def transicion_a(self, nuevo_estado):
+        if self.estado_actual: self.estado_actual("EXIT")
+        self.estado_actual = nuevo_estado
+        self.estado_actual("ENTRY")
+
+    def mostrar_pixeles(self):
+        contador = 0
+        for y in range(5):
+            for x in range(5):
+                if contador < self.pixeles:
+                    display.set_pixel(x, y, 9)
+                    contador += 1
+    
+    def estado_estado1(self, ev):
+        if ev == "ENTRY":
+            self.pixeles = 20
+            self.mostrar_pixeles()
+        if ev == "Timeout":
+            self.transicion_a(self.estado_estado1)
+            
+    def estado_estado2(self, ev):
+        if ev == "ENTRY":
+            pass
+        if ev == "Timeout":
+            pass
+
+task = Task()
+while True:
+    # Aquí generas los eventos de los botones y el gesto
+    if button_a.was_pressed():
+        task.post_event("A")
+    if button_b.was_pressed():
+        task.post_event("B")
+    if accelerometer.was_gesture("shake"):
+        task.post_event("S")
+
+    task.update()
+    utime.sleep_ms(20)
+````
+
 ## Bitácora de aplicación 
 
 
 
 ## Bitácora de reflexión
+
 
