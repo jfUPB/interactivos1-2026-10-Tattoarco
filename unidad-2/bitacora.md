@@ -147,6 +147,7 @@ waitYellow --> waitRed: Timeout / amarillo OFF
 ```` .asm
 from microbit import *
 import utime
+import music
 
 class Timer:
     def __init__(self, owner, event_to_post, duration):
@@ -228,22 +229,22 @@ class Task:
         if ev == "ENTRY":
             self.pixeles = 20
             self.mostrar_pixeles()
-        elif ev == "A":
+        if ev == "A":
             if self.pixeles < 25: 
                 self.pixeles += 1 
                 self.mostrar_pixeles()
-        elif ev == "B":
+        if ev == "B":
             if self.pixeles >15:
                 self.pixeles -=1
                 self.mostrar_pixeles()
-        elif ev == "S": 
+        if ev == "S": 
             self.transicion_a(self.estado_estado2)
             
             
     def estado_estado2(self, ev):
         if ev == "ENTRY": 
             self.myTimer.start(1000) 
-        elif ev == "Timeout":
+        if ev == "Timeout":
             if self.pixeles > 0:
                 self.pixeles -= 1
                 self.apagar_pixel()
@@ -255,8 +256,8 @@ class Task:
     def estado_end(self, ev): 
         if ev == "ENTRY": 
             display.show(Image.SKULL) 
-            pin0.write_digital(1) 
-        elif ev == "A": self.transicion_a(self.estado_estado1)
+            music.play(music.BIRTHDAY)
+        if ev == "A": self.transicion_a(self.estado_estado1)
                 
 
 task = Task()
@@ -274,11 +275,13 @@ while True:
     utime.sleep_ms(20)
 
 
+
 ````
 
 
 
 ## Bitácora de reflexión
+
 
 
 
