@@ -277,10 +277,14 @@ while True:
 
 
 ````
+- Diagrama UML
+  
+  <img width="515" height="512" alt="image" src="https://github.com/user-attachments/assets/0eb0dd98-1adf-4237-b594-d15c328d5a89" />
 
 
 
 ## Bitácora de reflexión
+
 
 
 
