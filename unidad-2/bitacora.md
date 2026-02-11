@@ -3,8 +3,23 @@
 ## Bitácora de proceso de aprendizaje
 ### Actividad 1 
 - **¿Cuáles son los estados en el programa?**
+  ```` .asm
+  self.estado_actual = None
+  def estado_waitInON(self, ev):
+  def estado_waitInOFF(self, ev):
+  ````
 - **¿Cuáles son los eventos en el programa?**
+  ````
+  ENTRY
+  EXIT
+  TIMEOUT
+  ````
 - **¿Cuáles son las acciones en el programa?**
+    1. Encender el píxel (display.set_pixel(x, y, 9)).
+    2. Apagar el píxel (display.set_pixel(x, y, 0)).
+    3. Iniciar el temporizador (self.myTimer.start()).
+
+Alternar el estado del píxel (si estaba encendido, se apaga; si estaba apagado, se enciende).
 
 ### Actividad 2
 
@@ -125,7 +140,10 @@ waitYellow --> waitRed: Timeout / amarillo OFF
 ```
 <img width="515" height="512" alt="image" src="https://github.com/user-attachments/assets/78346fe2-5243-48da-9408-a0b1bc21d405" />
 
-### Actividad 3
+## Bitácora de aplicación 
+
+### Actividad 4
+
 ```` .asm
 from microbit import *
 import utime
@@ -189,45 +207,78 @@ class Task:
         self.estado_actual = nuevo_estado
         self.estado_actual("ENTRY")
 
-    def mostrar_pixeles(self):
-        contador = 0
-        for y in range(5):
-            for x in range(5):
+    def mostrar_pixeles(self): 
+        contador = 0 
+        display.clear() 
+        for y in range(5): 
+            for x in range(5): 
                 if contador < self.pixeles:
-                    display.set_pixel(x, y, 9)
+                    display.set_pixel(x, y, 9) 
                     contador += 1
+    
+    def apagar_pixel(self): 
+        contador = 0 
+        for y in range(4,-1,-1): 
+            for x in range(4,-1,-1): 
+                if display.get_pixel(x, y) == 9:
+                    display.set_pixel(x, y, 0)
+                    return
     
     def estado_estado1(self, ev):
         if ev == "ENTRY":
             self.pixeles = 20
             self.mostrar_pixeles()
-        if ev == "Timeout":
-            self.transicion_a(self.estado_estado1)
+        elif ev == "A":
+            if self.pixeles < 25: 
+                self.pixeles += 1 
+                self.mostrar_pixeles()
+        elif ev == "B":
+            if self.pixeles >15:
+                self.pixeles -=1
+                self.mostrar_pixeles()
+        elif ev == "S": 
+            self.transicion_a(self.estado_estado2)
+            
             
     def estado_estado2(self, ev):
-        if ev == "ENTRY":
-            pass
-        if ev == "Timeout":
-            pass
+        if ev == "ENTRY": 
+            self.myTimer.start(1000) 
+        elif ev == "Timeout":
+            if self.pixeles > 0:
+                self.pixeles -= 1
+                self.apagar_pixel()
+                self.myTimer.start()
+            else:
+                self.transicion_a(self.estado_end)
+            
+
+    def estado_end(self, ev): 
+        if ev == "ENTRY": 
+            display.show(Image.SKULL) 
+            pin0.write_digital(1) 
+        elif ev == "A": self.transicion_a(self.estado_estado1)
+                
 
 task = Task()
+
 while True:
     # Aquí generas los eventos de los botones y el gesto
     if button_a.was_pressed():
         task.post_event("A")
     if button_b.was_pressed():
         task.post_event("B")
-    if accelerometer.was_gesture("shake"):
+    if accelerometer.is_gesture("shake"):
         task.post_event("S")
 
     task.update()
     utime.sleep_ms(20)
-````
 
-## Bitácora de aplicación 
+
+````
 
 
 
 ## Bitácora de reflexión
+
 
 
