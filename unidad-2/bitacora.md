@@ -23,7 +23,7 @@ Alternar el estado del píxel (si estaba encendido, se apaga; si estaba apagado,
 
 ### Actividad 2
 
-``` .asm
+``` .py
 from microbit import *
 import utime
 
@@ -144,7 +144,7 @@ waitYellow --> waitRed: Timeout / amarillo OFF
 
 ### Actividad 4
 
-```` .asm
+```` .py
 from microbit import *
 import utime
 import music
@@ -284,6 +284,7 @@ while True:
 
 
 ## Bitácora de reflexión
+
 
 
 
