@@ -3,7 +3,7 @@
 ## Bitácora de proceso de aprendizaje
 ### Actividad 1 
 - **¿Cuáles son los estados en el programa?**
-  ```` .asm
+  ```` .py
   self.estado_actual = None
   def estado_waitInON(self, ev):
   def estado_waitInOFF(self, ev):
@@ -284,6 +284,7 @@ while True:
 
 
 ## Bitácora de reflexión
+
 
 
 
