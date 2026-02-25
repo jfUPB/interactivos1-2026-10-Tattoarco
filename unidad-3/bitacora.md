@@ -453,8 +453,275 @@ while True:
 
 ## Bitácora de aplicación 
 
+### Actividad 4
+Al princio me generó error ya que estaba importando el estado en los lugares erroneos.
+````.js
+let port;
+let connectBtn;
 
+const TIMER_LIMITS = {
+  min: 15,
+  max: 25,
+  defaultValue: 20,
+};
+
+const EVENTS = {
+  DEC: "A",
+  INC: "B",
+  START: "S",
+  TICK: "Timeout",
+};
+
+const UI = {
+  dialSize: 250,
+  ringWeight: 20,
+  bigText: 100,
+  configText: 120,
+  helpText: 18,
+};
+
+// Define la clase Temporizador que extiende FSMTask para manejar el estado del temporizador y las transiciones entre estados.
+class Temporizador extends FSMTask {
+  constructor(minValue, maxValue, defaultValue) {
+    super();
+
+    this.minValue = minValue;
+    this.maxValue = maxValue;
+    this.defaultValue = defaultValue;
+    this.configValue = defaultValue;
+    this.totalSeconds = defaultValue;
+    this.remainingSeconds = defaultValue;
+    this.password = [EVENTS.DEC, EVENTS.INC, EVENTS.DEC];
+    this.stopSequence = [];
+
+    this.myTimer = this.addTimer(EVENTS.TICK, 1000);
+    this.transitionTo(this.estado_config);
+  }
+
+  get currentState() {
+    return this.state;
+  }
+
+  estado_config = (ev) => {
+    if (ev === ENTRY) {
+      this.configValue = this.defaultValue;
+    } else if (ev === EVENTS.DEC) {
+      if (this.configValue > this.minValue) this.configValue--;
+    } else if (ev === EVENTS.INC) {
+      if (this.configValue < this.maxValue) this.configValue++;
+    } else if (ev === EVENTS.START) {
+      this.totalSeconds = this.configValue;
+      this.remainingSeconds = this.totalSeconds;
+      this.transitionTo(this.estado_armed);
+    }
+  };
+  estado_armed = (ev) => {
+    if (ev === ENTRY) {
+      this.myTimer.start();
+    } else if (ev === EVENTS.TICK) {
+      if (this.remainingSeconds > 0) {
+        this.remainingSeconds--;
+        if (this.remainingSeconds === 0) {
+          this.transitionTo(this.estado_timeout);
+        } else {
+          this.myTimer.start();
+        }
+      }
+    } else if (ev === EXIT) {
+      this.myTimer.stop();
+    } else if (ev === EVENTS.START) {
+      // O el evento que decidas para pausar
+      this.transitionTo(this.estado_paused);
+    }
+  };
+
+  estado_timeout = (ev) => {
+    if (ev === ENTRY) {
+      console.log("¡TIEMPO!");
+    } else if (ev === EVENTS.DEC) {
+      this.transitionTo(this.estado_config);
+    }
+  };
+
+  //PAUSAR EL CONTADOR EN EL LA POSISCIÓN EN LA QUE SE ENCUENTA CON EL EVENTO "A" Y REANUDARLO CON EL MISMO EVENTO, ES DECIR, QUE SIRVA COMO UN BOTÓN DE PAUSA/REANUDACIÓN.
+  estado_paused = (ev) => {
+    if (ev === ENTRY) {
+      this.myTimer.stop();
+    }
+
+    if (ev === EVENTS.START) {
+      this.transitionTo(this.estado_armed);
+    }
+
+    if (ev === EVENTS.DEC || ev === EVENTS.INC) {
+      this.stopSequence.push(ev);
+
+      if (this.stopSequence.length === 3) {
+        if (this.stopSequence.join() === this.password.join()) {
+          this.stopSequence = [];
+          this.transitionTo(this.estado_config);
+        } else {
+          this.stopSequence = [];
+        }
+      }
+    }
+  };
+}
+
+let temporizador;
+const renderer = new Map();
+
+// Configura el canvas y el temporizador, y define las funciones de dibujo para cada estado del FSM.
+function setup() {
+  createCanvas(windowWidth, windowHeight);
+  temporizador = new Temporizador(TIMER_LIMITS.min, TIMER_LIMITS.max, TIMER_LIMITS.defaultValue);
+  textAlign(CENTER, CENTER);
+  port = createSerial();
+
+  renderer.set(temporizador.estado_config, () => drawConfig(temporizador.configValue));
+  renderer.set(temporizador.estado_armed, () => drawArmed(temporizador.remainingSeconds, temporizador.totalSeconds));
+  renderer.set(temporizador.estado_timeout, () => drawTimeout());
+
+  // Agrega un botón para conectar al puerto serial y asigna la función btnConnect al evento mousePressed.
+  connectBtn = createButton("Connect");
+  connectBtn.position(width / 2 - 50, height - 100);
+  connectBtn.mousePressed(connectBtnClick);
+}
+
+function draw() {
+  juan();
+  temporizador.update();
+  renderer.get(temporizador.currentState)?.();
+}
+
+function juan() {
+  if (port.availableBytes() > 0) {
+    let dataRx = port.read(1);
+    if (dataRx == "A") {
+      temporizador.postEvent("A");
+    } else if (dataRx == "B") {
+      temporizador.postEvent("B");
+    } else {
+      temporizador.postEvent("S");
+    }
+  }
+
+  if (!port.opened()) {
+    connectBtn.html("Connect to micro:bit");
+  } else {
+    connectBtn.html("Disconnect");
+  }
+}
+
+// Dibuja el estado de configuración mostrando el valor actual y las instrucciones para cambiarlo o iniciar el temporizador.
+function drawConfig(val) {
+  background(20, 40, 80);
+  fill(255);
+  textSize(120);
+  text(val, width / 2, height / 2);
+  textSize(18);
+  fill(200);
+  text("A(-) B(+) S(start)", width / 2, height / 2 + 100);
+}
+
+// Dibuja el estado armado con un círculo que se llena proporcionalmente al tiempo restante y el número de segundos restantes en el centro.
+function drawArmed(val, total) {
+  background(20, 40, 20);
+  let pulse = sin(frameCount * 0.1) * 10;
+
+  noFill();
+  strokeWeight(20);
+  stroke(255, 100, 0, 50);
+  ellipse(width / 2, height / 2, 250);
+
+  stroke(255, 150, 0);
+  let angle = map(val, 0, total, 0, TWO_PI);
+  arc(width / 2, height / 2, 250, 250, -HALF_PI, angle - HALF_PI);
+
+  fill(255);
+  noStroke();
+  textSize(100 + pulse);
+  text(val, width / 2, height / 2);
+}
+
+// Dibuja el estado de timeout con un fondo parpadeante y el texto "¡TIEMPO!" en el centro.
+function drawTimeout() {
+  let bg = frameCount % 20 < 10 ? color(150, 0, 0) : color(255, 0, 0);
+  background(bg);
+  fill(255);
+  textSize(100);
+  text("¡TIEMPO!", width / 2, height / 2);
+}
+
+function keyPressed() {
+  if (key === "a" || key === "A") temporizador.postEvent("A");
+  if (key === "b" || key === "B") temporizador.postEvent("B");
+  if (key === "s" || key === "S") temporizador.postEvent("S");
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+function connectBtnClick() {
+  if (!port.opened()) {
+    port.open("MicroPython", 115200);
+  } else {
+    port.close();
+  }
+}
+````
+- Código en el micro bit
+````.py
+from microbit import *
+import radio
+
+
+uart.init(baudrate=115200)
+radio.config(group=250)
+radio.on()
+
+while True:
+    if button_a.was_pressed():
+        uart.write('A')
+        sleep(500)
+    if button_b.was_pressed():
+        uart.write('B')
+        sleep(500)
+    if accelerometer.was_gesture('shake'):
+        uart.write('S')
+        sleep(500)
+
+````
 
 ## Bitácora de reflexión
+
+- Probamos realizando puenas para ver si funcionaba correctamente, primero, pasamos textos y luego sonidos, en donde yo como computador local le daba instrucciones y ella (Miranda) ejecutaba la lógica necesaria.
+
+- Código en el microbit
+  ````.py
+from microbit import *
+import radio
+
+
+uart.init(baudrate=115200)
+radio.config(group=250)
+radio.on()
+
+while True:
+    if button_a.was_pressed():
+        uart.write('A')
+        radio.send('A')
+        sleep(500)
+    if button_b.was_pressed():
+        uart.write('B')
+        radio.send('B')
+        sleep(500)
+    if accelerometer.was_gesture('shake'):
+        uart.write('S')
+        radio.send('S')
+        sleep(500)
+
+  ````
 
 
