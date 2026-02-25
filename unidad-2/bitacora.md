@@ -285,6 +285,214 @@ while True:
 
 ## Bitácora de reflexión
 
+1. Explica cómo resolviste el reto.
+   Revisando las actividades anteriores, viendo cómo estas estaban estructuradas y guandome poreso, además de consultar en interenet el cómo conectar una con otra. 
+3. Coloca el código final en tu bitácora tanto para el micro:bit como para p5.js.
+   . Codigo micro:bit
+
+ ````.py
+from microbit import *
+import utime
+import music
+
+uart.init(baudrate=115200)
+
+class Timer:
+    def __init__(self, owner, event_to_post, duration):
+        self.owner = owner
+        self.event = event_to_post
+        self.duration = duration
+        self.start_time = 0
+        self.active = False
+
+    def start(self, new_duration=None):
+        if new_duration is not None:
+            self.duration = new_duration
+        self.start_time = utime.ticks_ms()
+        self.active = True
+
+    def stop(self):
+        self.active = False
+
+    def update(self):
+        if self.active:
+            if utime.ticks_diff(utime.ticks_ms(), self.start_time) >= self.duration:
+                self.active = False
+                self.owner.post_event(self.event)
+
+
+class Task:
+    def __init__(self):
+        self.pixeles = 20
+        self.event_queue = []
+        self.timers = []
+        # Personalizas el nombre del evento y la duración
+        self.myTimer = self.createTimer("Timeout",1000)
+
+        self.estado_actual = None
+        self.transicion_a(self.estado_estado1)
+
+    def createTimer(self,event,duration):
+        t = Timer(self, event, duration)
+        self.timers.append(t)
+        return t
+
+    def post_event(self, ev):
+        self.event_queue.append(ev)
+
+    def update(self):
+        # 1. Actualizar todos los timers internos automáticamente
+        for t in self.timers:
+            t.update()
+
+        # 2. Procesar la cola de eventos resultante
+        while len(self.event_queue) > 0:
+            ev = self.event_queue.pop(0)
+            if self.estado_actual:
+                self.estado_actual(ev)
+
+    def transicion_a(self, nuevo_estado):
+        if self.estado_actual: self.estado_actual("EXIT")
+        self.estado_actual = nuevo_estado
+        self.estado_actual("ENTRY")
+
+    def mostrar_pixeles(self): 
+        contador = 0 
+        display.clear() 
+        for y in range(5): 
+            for x in range(5): 
+                if contador < self.pixeles:
+                    display.set_pixel(x, y, 9) 
+                    contador += 1
+    
+    def apagar_pixel(self): 
+        contador = 0 
+        for y in range(4,-1,-1): 
+            for x in range(4,-1,-1): 
+                if display.get_pixel(x, y) == 9:
+                    display.set_pixel(x, y, 0)
+                    return
+    
+    def estado_estado1(self, ev):
+        if ev == "ENTRY":
+            self.pixeles = 20
+            self.mostrar_pixeles()
+        if ev == "A":
+            if self.pixeles < 25: 
+                self.pixeles += 1 
+                self.mostrar_pixeles()
+        if ev == "B":
+            if self.pixeles >15:
+                self.pixeles -=1
+                self.mostrar_pixeles()
+        if ev == "S": 
+            self.transicion_a(self.estado_estado2)
+            
+            
+    def estado_estado2(self, ev):
+        if ev == "ENTRY": 
+            self.myTimer.start(1000) 
+        if ev == "Timeout":
+            if self.pixeles > 0:
+                self.pixeles -= 1
+                self.apagar_pixel()
+                self.myTimer.start()
+            else:
+                self.transicion_a(self.estado_end)
+            
+
+    def estado_end(self, ev): 
+        if ev == "ENTRY": 
+            display.show(Image.SKULL) 
+            music.play(music.BIRTHDAY)
+        if ev == "A": self.transicion_a(self.estado_estado1)
+                
+
+task = Task()
+
+while True:
+    # Aquí generas los eventos de los botones y el gesto
+    if button_a.was_pressed():
+        task.post_event("A")
+    if button_b.was_pressed():
+        task.post_event("B")
+    if accelerometer.is_gesture("shake"):
+        task.post_event("S")
+    if uart.any():
+        data = uart.read(1)
+        if data:
+            letra = data.decode('utf-8')
+            if letra == 'A':
+                task.post_event("A")
+            elif letra == 'B':
+                task.post_event("B")
+            elif letra == 'S':
+                task.post_event("S")
+
+    task.update()
+    utime.sleep_ms(20)
+
+````
+
+- Código en p5
+
+```` .py
+
+  let port;
+let connectBtn;
+let btnA;
+let btnB;
+let btnS;
+
+function setup() {
+    createCanvas(400, 400);
+    background(220);
+    port = createSerial();
+    connectBtn = createButton('Connect to micro:bit');
+    connectBtn.position(80, 300);
+    connectBtn.mousePressed(connectBtnClick);
+    btnA = createButton('A');
+    btnA.position(50, 350);
+
+    btnB = createButton('B');
+    btnB.position(150, 350);
+
+    btnS = createButton('S');
+    btnS.position(270, 350);
+}
+
+function draw() {
+
+    if(port.availableBytes() > 0){
+        let dataRx = port.read(1);
+        if(dataRx == 'A'){
+             port.write('A');
+        }
+        else if(dataRx == 'B'){
+             port.write('B');
+        }
+        else{
+             port.write('S');
+        }
+    }
+
+
+    if (!port.opened()) {
+        connectBtn.html('Connect to micro:bit');
+    }
+    else {
+        connectBtn.html('Disconnect');
+    }
+}
+
+function connectBtnClick() {
+    if (!port.opened()) {
+        port.open('MicroPython', 115200);
+    } else {
+        port.close();
+    }
+}
+````
 
 
 
