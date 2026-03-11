@@ -67,5 +67,56 @@ Finalizando la primera parte, se logró implementar un sistema de comunicación 
 
 ![alt text](image.png)
 
+### Parte 2:
+
+- En el `sketck.js` solo se modifican dos funciones que son `drawRunning()` y `updateLogic(data)`.
+
+En el constructo se agregan estas dos variables: 
+```.js
+this.circleResolution = 5;
+this.radius = 100;
+```
+En el `updateLogic(data)` se agrega: 
+
+```.js
+this.circleResolution = int(map(data.y, -2048, 2047, 2, 10));
+this.radius = map(data.x, -2048, 2047, -width/2, width/2);
+```
+con esto se mapean los valores de X y Y (-2048 y 2047) a parametros del dibujo.
+
+- La funcion `drawRunning()` quedó así:
+
+```.js
+  function drawRunning() {
+  let mb = painter.rxData;
+
+  if (!mb.ready) return;
+
+  if (mb.btnA) {
+    push();
+    translate(width / 2, height / 2);
+
+    let angle = TAU / painter.circleResolution;
+    if (mb.btnB) {
+      fill(34, 45, 122, 50);
+    } else {
+      noFill();
+    }
+    stroke(0);
+    beginShape();
+    for (let i = 0; i <= painter.circleResolution; i++) {
+      let x = cos(angle * i) * painter.radius;
+      let y = sin(angle * i) * painter.radius;
+
+      vertex(x, y);
+    }
+    endShape();
+    pop();
+  }
+```
+
+Se cambio el código ya que este generaba líneas
+
 
 ## Bitácora de reflexión
+
