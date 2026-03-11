@@ -7,6 +7,7 @@
 - Mediante instrucciones, ya sean teclas oprimidas o dejadas de oprimir en el teclado hasta moviemientos detectados desde el mouse.
 
 ## Bitácora de aplicación 
+
 ### Actiividad 2
 
 - Al crear un duplicado de `MicrobitAsciiAdapter` y nombrarlo `MicrobitAscii2Adapter`, se implementó una nueva función de parseo que incluye un checksum para validar la integridad de los datos recibidos.
@@ -69,22 +70,23 @@ Finalizando la primera parte, se logró implementar un sistema de comunicación 
 
 ### Parte 2:
 
-- En el `sketck.js` solo se modifican dos funciones que son `drawRunning()` y `updateLogic(data)`.
+- En el `sketck.js` solo se modifican dos funciones que son `drawRunning()` y `updateLogic(data)` del objeto `painter`, y se agregan dos variables a este mismo objeto, `circleResolution` y `radius`, las cuales serán modificadas por los valores de X y Y del microbit respectivamente.
 
-En el constructo se agregan estas dos variables: 
+En el constructor se agregan estas dos variables para inicializarlas con valores por defecto: 
 ```.js
 this.circleResolution = 5;
 this.radius = 100;
 ```
-En el `updateLogic(data)` se agrega: 
+
+En el `updateLogic(data)` se agrega el siguiente código para actualizar estas variables con los valores de X y Y del microbit: 
 
 ```.js
 this.circleResolution = int(map(data.y, -2048, 2047, 2, 10));
 this.radius = map(data.x, -2048, 2047, -width/2, width/2);
 ```
-con esto se mapean los valores de X y Y (-2048 y 2047) a parametros del dibujo.
+con esto se mapean los valores de X y Y (-2048 y 2047) a parametros del dibujo como lo son la resolución del círculo (cantidad de vértices) y el radio del círculo respectivamente, permitiendo así que al mover el microbit se modifique la forma del dibujo generado en el canvas.
 
-- La funcion `drawRunning()` quedó así:
+- La funcion `drawRunning()` quedó así, en esta función se dibuja un círculo con la cantidad de vértices determinada por `circleResolution` y con un radio determinado por `radius`, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno:
 
 ```.js
   function drawRunning() {
@@ -113,10 +115,16 @@ con esto se mapean los valores de X y Y (-2048 y 2047) a parametros del dibujo.
     endShape();
     pop();
   }
+}
 ```
 
-Se cambio el código ya que este generaba líneas
+Se cambio el código ya que este generaba líneas conectando los vértices, pero al agregar el `noFill()` se generan solo los vértices sin líneas conectándolos, y al agregar el `fill()` se generan las líneas conectándolos.
+
+Por tal razón, al presionar el botón A se dibuja el círculo, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno.
+
+Visualmente si inclinas el microbit hacia un lado, el círculo se estira hacia ese lado, y si lo inclinas hacia el otro lado, el círculo se estira hacia ese lado, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno, permitiendo así una interacción más dinámica con el dibujo generado en el canvas. 
 
 
 ## Bitácora de reflexión
+
 
