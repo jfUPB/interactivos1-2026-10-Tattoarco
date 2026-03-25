@@ -42,6 +42,38 @@ Se podría confundir y tomar el valor del byte de datos como un header, lo que p
 
 ## Actividad 2
 
-![alt text](image.png)
+Código en el microbit:editor de código de microbit
+
+```.py
+from microbit import *
+import struct
+
+uart.init(115200)
+
+HEADER = b'\xAA'
+
+while True:
+    xValue = accelerometer.get_x()
+    yValue = accelerometer.get_y()
+    aState = button_a.is_pressed()
+    bState = button_b.is_pressed()
+
+    payload = struct.pack('>2h2B', xValue, yValue, int(aState), int(bState))
+
+    checksum = sum(payload) % 256
+    packet = HEADER + payload + bytes([checksum])
+    uart.write(packet)
+    sleep(100)
+```
+
+
+Para crear el adaptador binario, se puede partir del código del adaptador ASCII y modificarlo para que lea los datos en formato binario.
+Inicié con la función `onData` para recibir los datos decodificados, luego implementé un buffer para acumular los bytes recibidos y un proceso de parsing que busca el header, extrae el payload, verifica el checksum y emite los datos en el mismo formato que el adaptador ASCII.
+
+Al pricipio tueve errores conel microbit:editor ya que no se estaba enviando el paquete correctamente, luego de corregir el código del microbit, el adaptador binario comenzó a recibir los datos correctamente y a emitirlos con el mismo contrato que el adaptador ASCII.
+
+![alt text](image-1.png)
+<!-- ![alt text](image.png) -->
 
 ## Bitácora de reflexión
+

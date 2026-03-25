@@ -127,4 +127,17 @@ Visualmente si inclinas el microbit hacia un lado, el círculo se estira hacia e
 
 ## Bitácora de reflexión
 
+1. Realiza una tabla comparativa entre el adapter ASCII que creaste en la Unidad 4 (MicrobitV2Adapter.js) y el adapter binario de esta unidad (MicrobitBinaryAdapter.js).
+
+![alt text](image-1.png)
+
+2. ¿Por qué la arquitectura desacoplada (patrón Adapter + Bridge + FSM) te permite añadir soporte para un protocolo completamente diferente sin modificar el frontend (sketch.js) ni el transporte (bridgeClient.js)?
+
+La arquitectura desacoplada permite que cada componente del sistema tenga una responsabilidad clara y definida, lo que facilita la integración de nuevos protocolos sin afectar otras partes del sistema. El patrón Adapter actúa como un intermediario que traduce las diferencias entre el protocolo binario y el formato esperado por el frontend, mientras que el Bridge se encarga de la comunicación entre el microbit y el servidor. La FSM ayuda a gestionar los estados de la comunicación y a manejar errores de manera eficiente. Esto significa que al implementar un nuevo adapter para un protocolo diferente, no es necesario modificar el frontend ni el transporte, ya que el adapter se encargará de traducir los datos al formato esperado por el frontend, manteniendo así la modularidad y escalabilidad del sistema.
+
+3. ¿En qué situaciones del mundo real preferirías un protocolo binario sobre uno ASCII y viceversa? Justifica con ejemplos concretos.
+
+Un protocolo binario es preferible en situaciones donde se requiere una comunicación eficiente y de bajo nivel, como dispositivos con recursos limitados. Por ejemplo, en un sistema de control de un robot, el uso de un protocolo binario puede reducir la cantidad de datos transmitidos y mejorar la velocidad de comunicación, lo que es crucial para el rendimiento del robot.
+
+4. Actualiza el diagrama de flujo de datos de la Unidad 4 para reflejar el protocolo binario. ¿Qué componentes cambiaron? ¿Qué componentes permanecieron intactos?
 
