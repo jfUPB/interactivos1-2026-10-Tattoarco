@@ -42,5 +42,6 @@ Se podría confundir y tomar el valor del byte de datos como un header, lo que p
 
 ## Actividad 2
 
+![alt text](image.png)
 
 ## Bitácora de reflexión
