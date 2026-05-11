@@ -2,8 +2,142 @@
 
 ## Bitácora de proceso de aprendizaje
 
+### Actividad 1 
+- Es un código que genera líneas en el canva siempre y cuando el botón izquierdo del mouse este presionado.
+- Mediante instrucciones, ya sean teclas oprimidas o dejadas de oprimir en el teclado hasta moviemientos detectados desde el mouse.
 
 ## Bitácora de aplicación 
 
+### Actiividad 2
+
+- Al crear un duplicado de `MicrobitAsciiAdapter` y nombrarlo `MicrobitAscii2Adapter`, se implementó una nueva función de parseo que incluye un checksum para validar la integridad de los datos recibidos.
+
+```.js
+function parseCsvLine(line) {
+  const values = line.trim().split("|");
+
+  if (values.length !== 6) throw new ParseError(`Expected 6 values, got ${values.length}`);
+
+  // $T:tiempo|X:acel_x|Y:acel_y|A:estado_a|B:estado_b|CHK:checksum\n
+
+  const t = Number(values[0].split(":")[1]);
+  const x = Number(values[1].split(":")[1]);
+  const y = Number(values[2].split(":")[1]);
+  const btnA = Number(values[3].split(":")[1]);
+  const btnB = Number(values[4].split(":")[1]);
+  const chk = Number(values[5].split(":")[1]); 
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) throw new ParseError("Invalid numeric data");
+  if (x < -2048 || x > 2047 || y < -2048 || y > 2047) throw new ParseError("Out of expected range");
+  if (![0, 1].includes(btnA) || ![0, 1].includes(btnB)) throw new ParseError("Invalid button data");
+  
+  const calc = Math.abs(x) + Math.abs(y) + btnA + btnB;
+  if (calc !== chk) throw new ParseError("Hola, checksum mismatch");
+
+
+  return { x: x | 0, y: y | 0, btnA: btnA === 1, btnB: btnB === 1 };
+}
+```
+
+calculando el checksum como la suma de los valores absolutos de x e y, más los estados de los botones A y B, se puede verificar que los datos recibidos no han sido corrompidos durante la transmisión. Si el checksum calculado no coincide con el valor recibido, se lanza un error indicando que hay una discrepancia en los datos.
+
+En el microbit 2, se implementó esta nueva función de parseo en el `bridgeServer.js`, permitiendo así una mayor robustez en la comunicación entre el dispositivo y el servidor.
+
+y en el código del microbit, se modificó el formato de los datos enviados para incluir el nuevo campo de checksum, asegurando que el servidor pueda validar la integridad de los datos recibidos.
+
+```.py
+from microbit import *
+
+uart.init(115200)
+display.set_pixel(0,0,9)
+
+while True:
+    t = running_time()
+    xValue = accelerometer.get_x()
+    yValue = accelerometer.get_y()
+    aState = 1 if button_a.is_pressed() else 0
+    bState = 1 if button_b.is_pressed() else 0
+    chk = abs(xValue) + abs(yValue) + aState + bState
+    data = "$T:{}|X:{}|Y:{}|A:{}|B:{}|CHK:{}\n".format(t, xValue, yValue, aState, bState, chk
+    )
+    uart.write(data)
+    sleep(100) # Envia datos a 10 Hz    
+```
+
+Finalizando la primera parte, se logró implementar un sistema de comunicación más robusto entre el microbit y el servidor, utilizando un checksum para validar la integridad de los datos transmitidos. Esto no solo mejora la confiabilidad del sistema, sino que también proporciona una base sólida para futuras expansiones o modificaciones en la comunicación entre dispositivos.
+
+![alt text](image.png)
+
+### Parte 2:
+
+- En el `sketck.js` solo se modifican dos funciones que son `drawRunning()` y `updateLogic(data)` del objeto `painter`, y se agregan dos variables a este mismo objeto, `circleResolution` y `radius`, las cuales serán modificadas por los valores de X y Y del microbit respectivamente.
+
+En el constructor se agregan estas dos variables para inicializarlas con valores por defecto: 
+```.js
+this.circleResolution = 5;
+this.radius = 100;
+```
+
+En el `updateLogic(data)` se agrega el siguiente código para actualizar estas variables con los valores de X y Y del microbit: 
+
+```.js
+this.circleResolution = int(map(data.y, -2048, 2047, 2, 10));
+this.radius = map(data.x, -2048, 2047, -width/2, width/2);
+```
+con esto se mapean los valores de X y Y (-2048 y 2047) a parametros del dibujo como lo son la resolución del círculo (cantidad de vértices) y el radio del círculo respectivamente, permitiendo así que al mover el microbit se modifique la forma del dibujo generado en el canvas.
+
+- La funcion `drawRunning()` quedó así, en esta función se dibuja un círculo con la cantidad de vértices determinada por `circleResolution` y con un radio determinado por `radius`, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno:
+
+```.js
+  function drawRunning() {
+  let mb = painter.rxData;
+
+  if (!mb.ready) return;
+
+  if (mb.btnA) {
+    push();
+    translate(width / 2, height / 2);
+
+    let angle = TAU / painter.circleResolution;
+    if (mb.btnB) {
+      fill(34, 45, 122, 50);
+    } else {
+      noFill();
+    }
+    stroke(0);
+    beginShape();
+    for (let i = 0; i <= painter.circleResolution; i++) {
+      let x = cos(angle * i) * painter.radius;
+      let y = sin(angle * i) * painter.radius;
+
+      vertex(x, y);
+    }
+    endShape();
+    pop();
+  }
+}
+```
+
+Se cambio el código ya que este generaba líneas conectando los vértices, pero al agregar el `noFill()` se generan solo los vértices sin líneas conectándolos, y al agregar el `fill()` se generan las líneas conectándolos.
+
+Por tal razón, al presionar el botón A se dibuja el círculo, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno.
+
+Visualmente si inclinas el microbit hacia un lado, el círculo se estira hacia ese lado, y si lo inclinas hacia el otro lado, el círculo se estira hacia ese lado, y dependiendo del estado del botón B se decide si el círculo se dibuja con relleno o sin relleno, permitiendo así una interacción más dinámica con el dibujo generado en el canvas. 
+
 
 ## Bitácora de reflexión
+
+1. Realiza una tabla comparativa entre el adapter ASCII que creaste en la Unidad 4 (MicrobitV2Adapter.js) y el adapter binario de esta unidad (MicrobitBinaryAdapter.js).
+
+![alt text](image-1.png)
+
+2. ¿Por qué la arquitectura desacoplada (patrón Adapter + Bridge + FSM) te permite añadir soporte para un protocolo completamente diferente sin modificar el frontend (sketch.js) ni el transporte (bridgeClient.js)?
+
+La arquitectura desacoplada permite que cada componente del sistema tenga una responsabilidad clara y definida, lo que facilita la integración de nuevos protocolos sin afectar otras partes del sistema. El patrón Adapter actúa como un intermediario que traduce las diferencias entre el protocolo binario y el formato esperado por el frontend, mientras que el Bridge se encarga de la comunicación entre el microbit y el servidor. La FSM ayuda a gestionar los estados de la comunicación y a manejar errores de manera eficiente. Esto significa que al implementar un nuevo adapter para un protocolo diferente, no es necesario modificar el frontend ni el transporte, ya que el adapter se encargará de traducir los datos al formato esperado por el frontend, manteniendo así la modularidad y escalabilidad del sistema.
+
+3. ¿En qué situaciones del mundo real preferirías un protocolo binario sobre uno ASCII y viceversa? Justifica con ejemplos concretos.
+
+Un protocolo binario es preferible en situaciones donde se requiere una comunicación eficiente y de bajo nivel, como dispositivos con recursos limitados. Por ejemplo, en un sistema de control de un robot, el uso de un protocolo binario puede reducir la cantidad de datos transmitidos y mejorar la velocidad de comunicación, lo que es crucial para el rendimiento del robot.
+
+4. Actualiza el diagrama de flujo de datos de la Unidad 4 para reflejar el protocolo binario. ¿Qué componentes cambiaron? ¿Qué componentes permanecieron intactos?
+
